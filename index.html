@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+<div class="posts">
+  {% for post in site.posts %}
+  <article class="post">
+    {%- if post.image -%}
+    <img src="{{- post.image | relative_url -}}" alt="" class="blog-roll-image">
+    {%- else -%}
+    {%- assign postImage = "/images/default2.jpg" -%}
+    <img src="{{- postImage | relative_url -}}" alt="" class="blog-roll-image">
+    {%- endif -%}
+    <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}
+      <h3 class="post-subtitle"> {{ post.subtitle }}</h3>
+      </a>
+    </h1>
+
+
+    <div class="entry">
+      <br>
+      <i>{{ post.excerpt }}</i>
+    </div>
+
+    <a href="{{ site.baseurl }}{{ post.url }}" class="read-more">Read More</a>
+  </article>
+  {% endfor %}
+</div>

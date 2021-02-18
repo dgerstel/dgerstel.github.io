@@ -1,0 +1,29 @@
+---
+layout: default
+---
+
+<article class="post">
+  {% include scripts.html %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  {%- if page.image -%}
+    <img src="{{- page.image | relative_url -}}" alt="" class="featured-image-post">
+  {%- else -%}
+    {%- assign postImage = "/images/default2.jpg" -%}
+    <img src="{{- postImage | relative_url -}}" alt="" class="featured-image-post">
+  {%- endif -%}
+  <h1>{{ page.title }}</h1>
+
+  <div class="abstract">
+    <i>{{ page.excerpt }}</i>
+  </div>
+
+  <div class="entry">
+    {{ content }}
+  </div>
+
+  <div class="date">
+    Written on {{ page.date | date: "%B %e, %Y" }}
+  </div>
+
+  {% include disqus.html %}
+</article>
