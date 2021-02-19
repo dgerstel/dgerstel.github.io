@@ -11,8 +11,8 @@ layout: default
     {%- assign postImage = "/images/default2.jpg" -%}
     <img src="{{- postImage | relative_url -}}" alt="" class="featured-image-post">
   {%- endif -%}
-  <h1>{{ page.title }}</h1>
-
+    <h1>{{ page.title }} <h3 class="post-subtitle"> {{ page.subtitle }}</h3>
+    </h1>
   <div class="abstract">
     <i>{{ page.excerpt }}</i>
   </div>
