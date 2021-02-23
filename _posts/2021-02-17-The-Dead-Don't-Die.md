@@ -28,6 +28,10 @@ alone. BMC Medical Informatics and Decision Making 20, 16 (2020)_
 
 The **motivation** behind this post is that I believe the paper **authors made a mistake in feature engineering** thus
 selecting patients that might have died as "survivors", hence the potentially _dead_ patients _don't die_ in the analysis.
+
+If you want to see the full code behind this post, have a look at the 
+[notebook](https://github.com/dgerstel/HeartFailurePrediction/blob/master/jupyter/DataCleaningAndExploration.ipynb).
+
 # Data Cleaning and Exploration
 
 The original dataset looks as follows.
