@@ -11,16 +11,27 @@ image: /images/DataCleaningAndExploration_files/zombi.jpg
 
 # Introduction
 
-Below I'm using the dataset obtained from Kaggle and published in the following paper.
+While looking for an interesting dataset to hone my data science skills, I stumbled upon one about heart failure prediction.
+It drew my attention as it's more real-life and with impact than, say, predicting who will survive the Titanic disaster
+(I really hope no one is planning to rebuild that ship and actually put people on it again ;-).) In the stark contrast,
+predicting who will survive after a heart failure incident might be of future use.
 
-[Dataset in Kaggle](https://www.kaggle.com/andrewmvd/heart-failure-clinical-data)
+The dataset is
 
-[Paper](https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/s12911-020-1023-5): Davide Chicco, Giuseppe
+
+-  analysed in this [paper](https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/s12911-020-1023-5): _Davide Chicco, Giuseppe
 Jurman: Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction
-alone. BMC Medical Informatics and Decision Making 20, 16 (2020).
+alone. BMC Medical Informatics and Decision Making 20, 16 (2020)_
 
+- available from
+[Kaggle](https://www.kaggle.com/andrewmvd/heart-failure-clinical-data)
+
+The **motivation** behind this post is that I believe the paper **authors made a mistake in feature engineering** thus
+selecting patients that might have died as "survivors", hence the potentially _dead_ patients _don't die_ in the analysis.
 # Data Cleaning and Exploration
 
+The original dataset looks as follows.
+{% comment %}
 ```python
 import os
 import math
@@ -42,6 +53,7 @@ df = pd.read_csv('../data/heart_failure_clinical_records_dataset.csv')
 ```python
 df.head()
 ```
+{% endcomment %}
 
 <div>
 <style scoped>
@@ -162,11 +174,7 @@ df.head()
 </table>
 </div>
 
-
-
-In the original dataset there is a typo with a superfluous *ni* in `creati(ni)ne_phosphokinase` (`serum_creatinine` is
-correct).
-
+{% comment %}
 ```python
 df.columns = ' '.join(df.columns).replace('creatinine_ph',
                                           'creatine_ph').split()
@@ -178,10 +186,11 @@ df.columns
            'serum_creatinine', 'serum_sodium', 'sex', 'smoking', 'time',
            'DEATH_EVENT'],
           dtype='object')
+{% endcomment %}
 
-The column `sex` should be interpreted (as mentioned in the paper) as `Male` for value 1 and `Female` for value 0. Let's
-rename it to `Male` for clarity.
 
+Let's have a look at the descriptive statistics of the data.
+{% comment %}
 ```python
 df.columns = ' '.join(df.columns).replace('sex', 'Male').split()
 df.columns
@@ -192,9 +201,9 @@ df.columns
            'serum_creatinine', 'serum_sodium', 'Male', 'smoking', 'time',
            'DEATH_EVENT'],
           dtype='object')
+{% endcomment %}
 
-Below we assign label categories to variables and then inspect the shape and descriptive statistics of the dataset.
-
+{% comment %}
 ```python
 LABEL = "DEATH_EVENT"  # store target label
 POS_LABEL, NEG_LABEL = "Deceased", "Survived"
@@ -209,6 +218,7 @@ df.shape
 ```python
 df.describe()
 ```
+{% endcomment %}
 
 <div>
 <style scoped>
@@ -223,7 +233,6 @@ df.describe()
     .dataframe thead th {
         text-align: right;
     }
-
 </style>
 <table border="1" class="dataframe">
   <thead>
@@ -231,14 +240,14 @@ df.describe()
       <th></th>
       <th>age</th>
       <th>anaemia</th>
-      <th>creatine_phosphokinase</th>
+      <th>creatinine_phosphokinase</th>
       <th>diabetes</th>
       <th>ejection_fraction</th>
       <th>high_blood_pressure</th>
       <th>platelets</th>
       <th>serum_creatinine</th>
       <th>serum_sodium</th>
-      <th>Male</th>
+      <th>sex</th>
       <th>smoking</th>
       <th>time</th>
       <th>DEATH_EVENT</th>
@@ -378,9 +387,15 @@ df.describe()
 </div>
 
 
-
-For convenience, let's rescale platelets by dividing by 1000.
-
+A few observations so far:
+- There is a typo with a superfluous *ni* in `creati(ni)ne_phosphokinase` (`serum_creatinine` is
+correct).
+  
+- The column `sex` should be interpreted (as mentioned in the paper) as `Male` for value 1 and `Female` for value 0. Let's
+rename it to `Male` for clarity.
+  
+- For convenience, let's rescale platelets by dividing by 1000.
+{% comment %}
 ```python
 df['platelets'] /= 1000
 ```
@@ -390,18 +405,136 @@ df[LABEL].sum() / df.shape[0]
 ```
 
     0.3210702341137124
+{% endcomment %}
 
-32% of patients passed away. The dataset is imbalanced and requires a stratified split into train and test sets, later
-on.
+- 32% of patients passed away. The dataset is imbalanced, which we'll need to keep in mind
 
-The column names should have units and improved formatting. We take the former from the paper. Then, we split into
-binary and non-binary features and store this information in a "metadata" dictionary. This way, it will be easier to,
-for example, create a web input form where a user would, accordingly, type in or select the binary value. If we had
-categorical features, we could provide also "choice" information (e.g. patient's nationality) such that the form "knows"
-about the possible options.
+- The column names should have units and improved formatting. We take the former from the paper. 
+  
+- The columns are either binary or numerical. There's no categorical columns (`sex' having only two values here may be interpreted as binary)
 
-Moreover, we shall make different plots for binary and non-binary variables.
+Now the dataset looks more readible:
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age [years]</th>
+      <th>Anaemia</th>
+      <th>Creatine Phosphokinase [mcg/L]</th>
+      <th>Diabetes</th>
+      <th>Ejection Fraction [%]</th>
+      <th>High Blood Pressure</th>
+      <th>Platelets [1000 platelets/mL]</th>
+      <th>Serum Creatinine [mg/dL]</th>
+      <th>Serum Sodium [mEq/L]</th>
+      <th>Male</th>
+      <th>Smoking</th>
+      <th>Time [days]</th>
+      <th>DEATH_EVENT</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>75.0</td>
+      <td>0</td>
+      <td>582</td>
+      <td>0</td>
+      <td>20</td>
+      <td>1</td>
+      <td>265.00000</td>
+      <td>1.9</td>
+      <td>130</td>
+      <td>1</td>
+      <td>0</td>
+      <td>4</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>55.0</td>
+      <td>0</td>
+      <td>7861</td>
+      <td>0</td>
+      <td>38</td>
+      <td>0</td>
+      <td>263.35803</td>
+      <td>1.1</td>
+      <td>136</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>65.0</td>
+      <td>0</td>
+      <td>146</td>
+      <td>0</td>
+      <td>20</td>
+      <td>0</td>
+      <td>162.00000</td>
+      <td>1.3</td>
+      <td>129</td>
+      <td>1</td>
+      <td>1</td>
+      <td>7</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>50.0</td>
+      <td>1</td>
+      <td>111</td>
+      <td>0</td>
+      <td>20</td>
+      <td>0</td>
+      <td>210.00000</td>
+      <td>1.9</td>
+      <td>137</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>65.0</td>
+      <td>1</td>
+      <td>160</td>
+      <td>1</td>
+      <td>20</td>
+      <td>0</td>
+      <td>327.00000</td>
+      <td>2.7</td>
+      <td>116</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+We shall make different plots for binary and non-binary variables.
+
+{% comment %}
 ```python
 from pprint import PrettyPrinter as PP
 
@@ -464,9 +597,10 @@ pp.pprint(feature_metadata)
         'Serum Sodium [mEq/L]': {'is_binary': False},
         'Smoking': {'is_binary': True},
         'Time [days]': {'is_binary': False}}
+{% endcomment %}
+Let us plot the binary features with the sex of a patient colour-coded.
 
-Let us plot the binary features.
-
+{% comment %}
 ```python
 def plot_features(binary,
                   kind,
@@ -536,6 +670,7 @@ def plot_features(binary,
 
 plot_features(binary=True, kind='bar', barhue='Male', ncols=2)
 ```
+{% endcomment %}
 
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_20_0.png)
 
@@ -543,6 +678,7 @@ Perhaps surprisingly, the categorical features: anaemia, diabetes, hypertension 
 statistically significant impact on the patient survival prospects. Neither does the sex. Curiously, the big uncertainty
 for the smoking women (`sex = 0`) must be reflective of very few patients in this category.
 
+{% comment %}
 ```python
 df.query('Male == 0 & Smoking == 1')[LABEL]
 ```
@@ -552,33 +688,42 @@ df.query('Male == 0 & Smoking == 1')[LABEL]
     76     0
     105    1
     Name: DEATH_EVENT, dtype: int64
+{% endcomment %}
 
 Indeed there were only 4 such women and 3 have passed away, yielding 75% value of the bar height and big uncertainty.
 
 Now, we'll peek at the non-binary features. We're going to use histograms with either patient category superimposed as
-well as box plots.
+well as box plots, where the horizontal bars mark the ranges and quartiles.
 
+{% comment %}
 ```python
 plot_features(binary=False, kind='hist', ncols=3)
 ```
+{% endcomment %}
 
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_24_0.png)
 
+{% comment %}
 ```python
 plot_features(binary=False, kind='box', ncols=3)
 ```
+{% endcomment %}
 
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_25_0.png)
 
+Here are some observations from the above graphs.
 - **Age**: patients above the age of 70 are obviously at a higher risk
 - **Ejection Fraction** is a strong predictor, especially below around 30 units
 - **Serum Creatinine** is also a very strong feature, specifically about around 2 units
 - **Serum Sodium** might be a helpful feature, but a little less so than the two previous ones
 - **Follow-up Duration (Time)**: We can tell that the patient chance to die in the follow-up period roughly follows an
   exponential distribution, for those that will not survive, as one might expect. The meaning of the follow-up period
-  for the survivors is different: it seems it merely reflects how long these patients were monitored. Let's have a
-  closer look at this variable.
+  for the survivors is different: it seems it merely reflects how long these patients were monitored. 
+  
+Let's have a closer look at the follow-up duration. Below we plot it for the deceased patients on top and for the "surviving" ones on the bottom.
+  
 
+{% comment %}
 ```python
 def plot_time(n_days=60):
     """Plot distribution of patient follow-up time for surviving
@@ -643,23 +788,23 @@ def plot_time(n_days=60):
 
 plot_time()
 ```
-
+{% endcomment %}
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_27_0.png)
 
-Interestingly, the 'Time' feature has different meaning for either category of patients:
+Indeed, the 'Time' feature has different meaning for either category of patients:
 
 - for **survived** patients: duration of the follow-up time
 - for **deceased** patients: day of their passing
 
 Therefore, the former ones might have passed away anytime after the follow-up termination. For instance, they might have
 passed away anytime between their follow-up duration and the full 350-day period. Hence, the patients that are
-potentially **dead don't die** in the data; they will be hereafter referred to as 'zombies' ;-).
+potentially **dead, don't die** in the data; they will be hereafter referred to as 'zombies' ;-).
 
-As a break while reading this notebook I recommend the wonderful Sturgill
+As a break while reading this post I recommend the wonderful Sturgill
 Simpson's ["The Dead Don't Die" song](https://www.youtube.com/watch?v=xiukuoSjDj0) ;-)
 
 Selecting the 'survivors' of follow-up duration greater than $$m$$ days ($$Time > m$$ days) means they have *certainly*
-survived the first $m$ days. On the other hand, to be consistent, we must choose the 'non-survivors' who have passed
+survived the first $$m$$ days. On the other hand, to be consistent, we must choose the 'non-survivors' who have passed
 away *within* the first $$m$$ days ($$Time < m$$ days). The corresponding regions are highlighted in the graphs.
 
 This way we will be able to analyse how likely a given patient is to survive $$m$$ days, e.g. 2 months, after the heart
@@ -681,6 +826,7 @@ have died were considered *survivors*.
 
 Let us see how many patients are we left with for various values of $$m$$.
 
+{% comment %}
 ```python
 def plot_survived_died_period(n_min=10, n_max=350, step=10):
     days = []
@@ -735,7 +881,7 @@ plot_survived_died_period()
 
     Max sum arg: 70 days
     Max F1 arg: 100 days
-
+{% endcomment %}
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_30_1.png)
 
 Maximising harmonic average ensures the two variables are high and close by (i.e. balanced). The harmonic average
@@ -748,14 +894,16 @@ possible, but they should yield less precise ML performance (which claim we migh
 
 We'll select, therefore, the highlighted below regions of either patient group.
 
+{% comment %}
 ```python
 plot_time(100)
 ```
+{% endcomment %}
 
 ![png](/images/DataCleaningAndExploration_files/DataCleaningAndExploration_32_0.png)
 
-Finally, we'll save the dataset and feature metadata to pick up in the next steps.
 
+{% comment %}
 ```python
 import joblib
 
@@ -909,6 +1057,7 @@ fm
      'Smoking': {'is_binary': True},
      'Time [days]': {'is_binary': False},
      'DEATH_EVENT': {'is_binary': True}}
+{% endcomment %}
 
 # Conclusions -- what I've learnt so far
 
