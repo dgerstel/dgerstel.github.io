@@ -32,7 +32,7 @@ I'll document in this blog my data science projects and practical lessons I've l
 
 ### Contact me
 
-Feel free to get in touch if you spot a bug/mistake, have suggestions or want to tell me a joke ;-)
+Feel free to get in touch if you want to discuss your data project, spot a bug/mistake, have suggestions or want to tell me a joke ;-)
 
 [dawidgerstel@gmail.com](mailto:dawidgerstel@gmail.com)
 
