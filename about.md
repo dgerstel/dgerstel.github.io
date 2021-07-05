@@ -8,8 +8,16 @@ Hi, I'm Dawid (pronounced Dah-veed, despite the *w*).
 Currently, I'm based in Marseille, France.
 Welcome to my personal blog about data science :-)
 
+I am a freelance data scientist. I help French companies (mostly e-commerce) make sense out of data.
+From databases to machine learning, from prototypes to Web Apps/API's on cloud.
+I have worked professionally using:
+- Databases (SQL)
+- Python (Object-Oriented)
+- Machine Learning 
+- Django and Flask
+- Cloud (AWS)
 
-I was just awarded a PhD in particle physics. For the thesis, I performed a challenging data analysis testing "Lepton Flavour Universality"
+Last year I was awarded a PhD in particle physics. For the thesis, I performed a challenging data analysis testing "Lepton Flavour Universality"
 at the LHCb experiment at CERN. My major responsibilities required the following skills: 
 - Python and Shell (Bash) programming
 - Machine Learning (Boosted Decision Trees, XGBoost)
