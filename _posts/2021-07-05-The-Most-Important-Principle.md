@@ -1,6 +1,6 @@
 ---
 layout: post
-title: The most important principle of Data/Computer Science
+title: The Most Important Principle Of Data/Computer Science
 classes: wide
 excerpt: "How to avoid the traps?"
 image: /images/gigo.jpg
